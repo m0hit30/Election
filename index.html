@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Responsive Number Grid with Popover</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+    }
+
+    .search-bar {
+      position: sticky;
+      top: 0;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      background: #f0f0f0;
+      padding: 10px;
+      z-index: 10;
+    }
+
+    .search-bar input {
+      padding: 8px;
+      font-size: 14px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .search-bar button {
+      padding: 8px 16px;
+      font-size: 14px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .search-bar button:hover {
+      background-color: #0056b3;
+    }
+
+    .grid-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px;
+      scroll-behavior: smooth;
+      max-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .box {
+      flex: 1 1 calc(25% - 16px);
+      min-width: 80px;
+      height: 80px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #ccc;
+      background: #f9f9f9;
+      font-size: 16px;
+      box-sizing: border-box;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .box.green {
+      background-color: #16a34a;
+      color: white;
+    }
+
+    .box.red {
+      background-color: #dc2626;
+      color: white;
+    }
+
+    @media (max-width: 800px) {
+      .box {
+        flex: 1 1 calc(33.33% - 16px);
+      }
+    }
+
+    @media (max-width: 500px) {
+      .box {
+        flex: 1 1 calc(50% - 16px);
+      }
+    }
+
+    .popover {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 4px;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .popover button {
+      margin: 2px;
+      padding: 6px 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="search-bar">
+    <input type="number" id="searchInput" min="1" max="4000" placeholder="Enter number (1-4000)">
+    <button onclick="searchNumber()">Search</button>
+  </div>
+  <div class="grid-container" id="grid"></div>
+
+  <div id="popover" class="popover">
+    <button id="greenBtn">✅</button>
+    <button id="redBtn">❌</button>
+  </div>
+
+  <script>
+    const grid = document.getElementById("grid");
+    const popover = document.getElementById("popover");
+    const greenBtn = document.getElementById("greenBtn");
+    const redBtn = document.getElementById("redBtn");
+    let currentBox = null;
+
+    for (let i = 1; i <= 4000; i++) {
+      const box = document.createElement("div");
+      box.className = "box";
+      box.textContent = i;
+      box.id = `box-${i}`;
+      grid.appendChild(box);
+    }
+
+    function searchNumber() {
+      const input = document.getElementById("searchInput");
+      const number = parseInt(input.value);
+      if (number >= 1 && number <= 4000) {
+        const target = document.getElementById(`box-${number}`);
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "center" });
+          target.style.backgroundColor = "#ffeb3b";
+          setTimeout(() => {
+            target.style.backgroundColor = "";
+          }, 2000);
+        }
+      } else {
+        alert("Please enter a number between 1 and 4000.");
+      }
+    }
+
+    grid.addEventListener("click", (e) => {
+      const box = e.target.closest(".box");
+      if (!box) return;
+
+      currentBox = box;
+      const rect = box.getBoundingClientRect();
+      popover.style.top = `${rect.bottom + window.scrollY}px`;
+      popover.style.left = `${rect.left + window.scrollX}px`;
+      popover.style.display = "block";
+    });
+
+    greenBtn.onclick = () => updateStatus("green");
+    redBtn.onclick = () => updateStatus("red");
+
+    function updateStatus(status) {
+      if (!currentBox) return;
+      currentBox.classList.remove("green", "red");
+      currentBox.classList.add(status);
+      popover.style.display = "none";
+    }
+
+    document.addEventListener("click", (e) => {
+      if (!popover.contains(e.target) && !grid.contains(e.target)) {
+        popover.style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>
